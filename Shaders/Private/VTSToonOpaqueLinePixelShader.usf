@@ -1,0 +1,26 @@
+#include "Common.ush"
+#include "SceneTexturesCommon.ush"
+
+Texture2D SceneNormalTex;
+SamplerState SceneNormalTexSampler;
+
+void VTSToonOpaqueLinePS(
+	float4 InUVAndScreenPos : TEXCOORD0,
+	float4 InPosition	: SV_POSITION,
+	out float4 OutColor : SV_Target0
+	)
+{
+	OutColor = 0;
+	float3 normal = Texture2DSampleLevel(SceneNormalTex, SceneNormalTexSampler, InUVAndScreenPos.xy, 0.0f).rgb;
+	normal = normal * 2.0f - 1.0f;
+	//const float SceneDepth = CalcSceneDepth(ScreenUV);
+	//float2 ClipPosition = GetScreenPositionForProjectionType(InScreenPosition.xy / InScreenPosition.w, SceneDepth);
+	//float3 TranslatedWorldPosition = mul(float4(ClipPosition, SceneDepth, 1), View.ScreenToTranslatedWorld).xyz;
+	//float3 CameraVector = normalize(TranslatedWorldPosition - View.TranslatedWorldCameraOrigin);
+	float3 CameraVector = normalize(View.ViewForward);
+
+	float outlineStrength = abs(dot(CameraVector, normal));
+
+	//outlineStrength = saturate(outlineStrength * 4.0f);
+    OutColor = float4(outlineStrength, outlineStrength, outlineStrength, 1.0f);
+}
