@@ -2927,15 +2927,16 @@ void FDeferredShadingSceneRenderer::RenderSimpleLightsStandardDeferred(
 //ZengRui: Line for scene after base pass.
 class VTSToonOpaqueLinePS : public FGlobalShader
 {
-public:
 	DECLARE_GLOBAL_SHADER(VTSToonOpaqueLinePS);
 	SHADER_USE_PARAMETER_STRUCT(VTSToonOpaqueLinePS, FGlobalShader);
 
-	//class FNaniteCompositeDim : SHADER_PERMUTATION_BOOL("NANITE_COMPOSITE");
-	//using FPermutationDomain = TShaderPermutationDomain<FNaniteCompositeDim>;
+	//class FEnableTexCoordScreenVector : SHADER_PERMUTATION_BOOL("PERMUTATION_ENABLE_TEXCOORD_SCREENVECTOR");
+	//using FPermutationDomain = TShaderPermutationDomain<FEnableTexCoordScreenVector>;
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
-		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<float>, SceneNormalTex)
+		SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)
+		SHADER_PARAMETER_RDG_TEXTURE(Texture2D, SceneNormalTex)
+		SHADER_PARAMETER_SAMPLER(SamplerState, SceneNormalTexSampler)
 		RENDER_TARGET_BINDING_SLOTS()
 	END_SHADER_PARAMETER_STRUCT()
 
@@ -2965,11 +2966,41 @@ IMPLEMENT_GLOBAL_SHADER(VTSToonOpaqueLinePS, "/Engine/Private/VTSToonOpaqueLineP
 //ZengRui: Line for scene after base pass.
 FRDGTextureRef FDeferredShadingSceneRenderer::VTSToonOpaqueLine(
 	FRDGBuilder& GraphBuilder,
-	FRDGTextureSRVRef SceneStencilTexture,
+	FRDGTextureRef SceneNormalTexture,
 	const TArrayView<FRDGTextureRef> NaniteShadingMasks
 )
 {
+	RDG_EVENT_SCOPE(GraphBuilder, "VTSToonOpaqueLine");
+
 	FRDGTextureRef SceneLineTexture = nullptr;
+
+	{
+		check(SceneNormalTexture);
+		const FIntPoint TextureExtent = SceneNormalTexture->Desc.Extent;
+		const FRDGTextureDesc Desc = FRDGTextureDesc::Create2D(TextureExtent, PF_FloatRGBA, FClearValueBinding::White, TexCreate_RenderTargetable | TexCreate_ShaderResource);
+		SceneLineTexture = GraphBuilder.CreateTexture(Desc, TEXT("SceneLineTarget"));
+	}
+
+	for (int32 ViewIndex = 0, ViewCount = Views.Num(); ViewIndex < ViewCount; ++ViewIndex)
+	{
+		const FViewInfo& View = Views[ViewIndex];
+		//RDG_EVENT_SCOPE_CONDITIONAL(GraphBuilder, Views.Num() > 1, "View%d", ViewIndex);
+		//RDG_GPU_MASK_SCOPE(GraphBuilder, View.GPUMask);
+
+		auto* PassParameters = GraphBuilder.AllocParameters<VTSToonOpaqueLinePS::FParameters>();
+		PassParameters->RenderTargets[0] = FRenderTargetBinding(SceneLineTexture, ERenderTargetLoadAction::ELoad);
+		PassParameters->View = View.ViewUniformBuffer;
+		PassParameters->SceneNormalTex = SceneNormalTexture;
+		PassParameters->SceneNormalTexSampler = TStaticSamplerState<SF_Point, AM_Wrap, AM_Wrap, AM_Wrap>::GetRHI();
+
+		const FScreenPassTextureViewport Viewport(SceneLineTexture, View.ViewRect);
+
+		//VTSToonOpaqueLinePS::FPermutationDomain PermutationVector;
+		//PermutationVector.Set<VTSToonOpaqueLinePS::FEnableTexCoordScreenVector >(true);
+		TShaderMapRef<VTSToonOpaqueLinePS> PixelShader(View.ShaderMap);
+
+		AddDrawScreenPass(GraphBuilder, {}, View, Viewport, Viewport, PixelShader, PassParameters);
+	}
 
 	return SceneLineTexture;
 }
