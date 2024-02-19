@@ -980,7 +980,7 @@ private:
 	//ZengRui: Line for scene after base pass.
 	FRDGTextureRef VTSToonOpaqueLine(
 		FRDGBuilder& GraphBuilder,
-		FRDGTextureSRVRef SceneStencilTexture,
+		FRDGTextureRef SceneNormalTexture,
 		const TArrayView<FRDGTextureRef> NaniteResolveTextures);
 	//ZengRui
 
