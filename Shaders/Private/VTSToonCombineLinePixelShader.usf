@@ -1,0 +1,18 @@
+#include "Common.ush"
+#include "SceneTexturesCommon.ush"
+
+Texture2D SceneLineTex;
+Texture2D SceneColor;
+SamplerState SceneLineTexSampler;
+
+void VTSToonCombineLinePS(
+	float4 InUVAndScreenPos : TEXCOORD0,
+	out float4 OutColor : SV_Target0
+	)
+{
+	OutColor = 0;
+	float4 lineColor = Texture2DSampleLevel(SceneLineTex, SceneLineTexSampler, InUVAndScreenPos.xy, 0.0f);
+	float4 sceneColor = Texture2DSampleLevel(SceneColor, SceneLineTexSampler, InUVAndScreenPos.xy, 0.0f);
+
+    OutColor = sceneColor * lineColor;
+}

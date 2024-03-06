@@ -19,8 +19,8 @@ void VTSToonOpaqueLinePS(
 	//float3 CameraVector = normalize(TranslatedWorldPosition - View.TranslatedWorldCameraOrigin);
 	float3 CameraVector = normalize(View.ViewForward);
 
-	float outlineStrength = abs(dot(CameraVector, normal));
+	float outlineStrength = 1.0f - saturate((ddx(normal) + ddy(normal)) * 10.0f);
 
 	//outlineStrength = saturate(outlineStrength * 4.0f);
-    OutColor = float4(outlineStrength, outlineStrength, outlineStrength, 1.0f);
+    OutColor = float4(outlineStrength, outlineStrength, outlineStrength, outlineStrength);
 }
