@@ -984,6 +984,14 @@ private:
 		const TArrayView<FRDGTextureRef> NaniteResolveTextures);
 	//ZengRui
 
+	//ZengRui: Combine line to final result
+	void VTSToonCombineLine(
+		FRDGBuilder& GraphBuilder,
+		const FRDGTextureRef& SceneTextures,
+		const FRDGTextureRef& SceneLineTexture,
+		FRDGTextureRef Target);
+	//Zengrui
+
 	void RenderHeterogeneousVolumes(FRDGBuilder& GraphBuilder, const FSceneTextures& SceneTextures);
 	void CompositeHeterogeneousVolumes(FRDGBuilder& GraphBuilder, const FSceneTextures& SceneTextures);
 

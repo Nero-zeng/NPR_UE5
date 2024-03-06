@@ -2930,9 +2930,6 @@ class VTSToonOpaqueLinePS : public FGlobalShader
 	DECLARE_GLOBAL_SHADER(VTSToonOpaqueLinePS);
 	SHADER_USE_PARAMETER_STRUCT(VTSToonOpaqueLinePS, FGlobalShader);
 
-	//class FEnableTexCoordScreenVector : SHADER_PERMUTATION_BOOL("PERMUTATION_ENABLE_TEXCOORD_SCREENVECTOR");
-	//using FPermutationDomain = TShaderPermutationDomain<FEnableTexCoordScreenVector>;
-
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 		SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D, SceneNormalTex)
@@ -2940,24 +2937,6 @@ class VTSToonOpaqueLinePS : public FGlobalShader
 		RENDER_TARGET_BINDING_SLOTS()
 	END_SHADER_PARAMETER_STRUCT()
 
-	//static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
-	//{
-	//	FPermutationDomain PermutationVector(Parameters.PermutationId);
-
-	//	if (!DoesPlatformSupportNanite(Parameters.Platform, false) && PermutationVector.Get<FNaniteCompositeDim>() != 0)
-	//	{
-	//		return false;
-	//	}
-
-	//	return IsFeatureLevelSupported(Parameters.Platform, ERHIFeatureLevel::SM5);
-	//}
-
-	//static void ModifyCompilationEnvironment(const FGlobalShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment)
-	//{
-	//	FGlobalShader::ModifyCompilationEnvironment(Parameters, OutEnvironment);
-	//	OutEnvironment.SetDefine(TEXT("STENCIL_LIGHTING_CHANNELS_SHIFT"), STENCIL_LIGHTING_CHANNELS_BIT_ID);
-	//	OutEnvironment.SetRenderTargetOutputFormat(0, PF_R16_UINT);
-	//}
 };
 
 IMPLEMENT_GLOBAL_SHADER(VTSToonOpaqueLinePS, "/Engine/Private/VTSToonOpaqueLinePixelShader.usf", "VTSToonOpaqueLinePS", SF_Pixel);

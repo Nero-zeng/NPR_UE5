@@ -4368,6 +4368,15 @@ void FDeferredShadingSceneRenderer::Render(FRDGBuilder& GraphBuilder)
 			}
 		}
 
+		//ZengRui: Copy secne color to texture.
+		FRDGTextureRef SceneColorCopy = GraphBuilder.CreateTexture(SceneTextures.Color.Target->Desc, TEXT("SceneColorCopy"));
+		AddCopyTexturePass(GraphBuilder, SceneTextures.Color.Target, SceneColorCopy);
+		//ZengRui
+
+		//ZengRui: Add combine line pass.
+		VTSToonCombineLine(GraphBuilder, SceneColorCopy, SceneLineTexture, SceneTextures.Color.Target);
+		//ZengRui
+		
 		// Finish rendering for each view.
 		if (ViewFamily.bResolveScene && ViewFamilyTexture)
 		{
